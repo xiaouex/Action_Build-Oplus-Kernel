@@ -233,7 +233,7 @@ jobs:
           fi
 
           echo "开始构建内核，构建类型：$BUILD_TYPE"
-          ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.Chipset }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
+          LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.Chipset }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
 
       - name: Make AnyKernel3 # 制作 AnyKernel3
         run: |
