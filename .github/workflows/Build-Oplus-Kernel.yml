@@ -170,11 +170,11 @@ jobs:
           else
             echo "SukiSU_patch 目录已存在，跳过克隆。"
           fi
-          cp ./SukiSU_patch/hooks/new_hooks.patch "$COMMON/"
+          cp ./SukiSU_patch/hooks/syscall_hooks.patch "$COMMON/"
 
           cd "$COMMON"
           echo "正在打 vfs 补丁..."
-          patch -p1 -F 3 < "new_hooks.patch" || { echo "应用 vfs 补丁失败"; exit 1; }
+          patch -p1 -F 3 < "syscall_hooks.patch" || { echo "应用 vfs 补丁失败"; exit 1; }
           echo "vfs 补丁应用完成"
 
       - name: Configure kernel # 配置内核
