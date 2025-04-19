@@ -68,6 +68,32 @@ jobs:
           echo "ANDROID_VERSION=$ANDROID_VERSION" >> $GITHUB_ENV
           echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
 
+      - name: Parse Device Name # 解析机型名称
+        run: |
+          FILE="${{ inputs.FILE }}"
+
+          # 移除末尾的 _v（如果有）
+          BASE_NAME="${FILE%_u}"
+          BASE_NAME="${BASE_NAME%_v}"
+
+          # 提取品牌（第一个下划线前的部分）
+          RAW_BRAND="${BASE_NAME%%_*}"
+
+          # 提取型号（品牌后的所有部分）
+          MODEL="${BASE_NAME#*_}"
+          MODEL="${MODEL//_/ }"  # 把下划线换成空格，比如 ace5_pro -> ace5 pro
+
+          # 品牌映射：首字母大写或自定义映射
+          case "$RAW_BRAND" in
+            oneplus) BRAND="OnePlus" ;;
+            oppo)    BRAND="OPPO" ;;
+            *)       BRAND="$(echo "$RAW_BRAND" | sed 's/.*/\u&/')" ;;  # 默认只大写首字母
+          esac
+
+          echo "BRAND=${BRAND}" >> $GITHUB_ENV
+          echo "MODEL=${MODEL}" >> $GITHUB_ENV
+          echo "Device 机型：${BRAND} ${MODEL}"
+
       - name: Set Environment Variable # 设置内核环境变量
         run: |
           WORKSPACE_DIR="$GITHUB_WORKSPACE/kernel_workspace"
@@ -291,3 +317,31 @@ jobs:
         with:
           name: "Image-${{ inputs.FILE }}-SukiSU-${{ env.KSUVER }}-${{ steps.formatted_date.outputs.formatted }}"
           path: ${{ env.WORKSPACE }}/image_output/*
+
+      - name: Zip AnyKernel3 # 创建 AnyKernel3 压缩文件
+        run: |
+          cd "$WORKSPACE/AnyKernel3-KernelSU-Next"
+          zip -r "$WORKSPACE/AnyKernel3-${{ inputs.FILE }}-SukiSU-${{ env.KSUVER }}-${{ steps.formatted_date.outputs.formatted }}.zip" *
+
+      - name: Create Release version and upload # 创建正式版本并上传
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "内核发布: ${{ env.BRAND }}-${{ env.MODEL }}-${{ steps.formatted_date.outputs.formatted }}"
+          tag_name: "${{ inputs.FILE }}-${{ steps.formatted_date.outputs.formatted }}"
+          body: |
+            OnePlus Kernel Build
+            - Device 机型: `${{ env.BRAND }} ${{ env.MODEL }}`
+            - SoC 型号: `${{ inputs.SoC }}`
+            - Chipset 代号: `${{ inputs.Chipset }}`
+            - KernelSU 类型: `${{ env.KSU_TYPE }}`
+            - Branch 版本: `${{ env.KSUVER }}`
+            - SUSFS 补丁: `${{ inputs.SUSFS }}`
+            - VFS 补丁: `${{ inputs.VFS_PATCH }}`
+            - Kernel 版本: `${{ inputs.VERSION }}`
+            - 构建时间: `${{ steps.formatted_date.outputs.formatted }}`
+          files: |
+            ${{ env.WORKSPACE }}/AnyKernel3-*.zip
+            ${{ env.WORKSPACE }}/image_output/boot.img
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
