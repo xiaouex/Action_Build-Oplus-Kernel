@@ -8,7 +8,7 @@ on:
         required: true
         default: 'sm8750'
 
-      FEIL:
+      FILE:
         description: "配置文件名 // Configuration file name"
         required: true
         default: 'oneplus_13_v'
@@ -110,7 +110,7 @@ jobs:
       - name: Initialize repo and sync # 初始化 repo 和同步
         run: |
           mkdir "$WORKSPACE" && cd "$WORKSPACE"
-          repo init -u https://github.com/schqiushui/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.SoC }} -m ${{ inputs.FEIL }}.xml --depth=1 || { echo "repo init 失败"; exit 1; }
+          repo init -u https://github.com/schqiushui/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.SoC }} -m ${{ inputs.FILE }}.xml --depth=1 || { echo "repo init 失败"; exit 1; }
           repo sync -c -j$(nproc --all) --no-tags || { echo "repo sync 失败"; exit 1; }
 
       - name: Get KernelSU version # 获取 KernelSU 版本
@@ -282,11 +282,11 @@ jobs:
       - name: Upload AnyKernel3 # 上传 AnyKernel3
         uses: actions/upload-artifact@v4
         with:
-          name: "AnyKernel3-${{ inputs.FEIL }}-SukiSU-${{ env.KSUVER }}-${{ steps.formatted_date.outputs.formatted }}"
+          name: "AnyKernel3-${{ inputs.FILE }}-SukiSU-${{ env.KSUVER }}-${{ steps.formatted_date.outputs.formatted }}"
           path: ${{ env.WORKSPACE }}/AnyKernel3-KernelSU-Next/*
 
       - name: Upload Image # 上传 Image
         uses: actions/upload-artifact@v4
         with:
-          name: "Image-${{ inputs.FEIL }}-SukiSU-${{ env.KSUVER }}-${{ steps.formatted_date.outputs.formatted }}"
+          name: "Image-${{ inputs.FILE }}-SukiSU-${{ env.KSUVER }}-${{ steps.formatted_date.outputs.formatted }}"
           path: ${{ env.WORKSPACE }}/image_output/*
