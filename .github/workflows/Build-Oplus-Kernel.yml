@@ -34,9 +34,9 @@ on:
         type: choice
         options:
           - Kernel_without_KSU
-          - SukiSU-dev
-          - SukiSU-stable
-        default: SukiSU-dev
+          - SukiSU_dev
+          - SukiSU_stable
+        default: SukiSU_dev
 
       SUSFS:
         description: "启用 SUSFS // Enable SUSFS"
@@ -116,9 +116,10 @@ jobs:
       - name: Get KernelSU version # 获取 KernelSU 版本
         if: ${{ startsWith(inputs.KSU_CONFIG, 'SukiSU') }}
         run: |
-          if [[ "${{ inputs.KSU_CONFIG }}" == "SukiSU-dev" ]]; then
+          echo "KSU_TYPE=$(echo '${{ inputs.KSU_CONFIG }}' | cut -d'_' -f1)" >> $GITHUB_ENV
+          if [[ "${{ inputs.KSU_CONFIG }}" == "SukiSU_dev" ]]; then
             echo "SukiSU_BRANCH=susfs-dev" >> $GITHUB_ENV
-          elif [[ "${{ inputs.KSU_CONFIG }}" == "SukiSU-stable" ]]; then
+          elif [[ "${{ inputs.KSU_CONFIG }}" == "SukiSU_stable" ]]; then
             echo "SukiSU_BRANCH=susfs-stable" >> $GITHUB_ENV
           fi
 
