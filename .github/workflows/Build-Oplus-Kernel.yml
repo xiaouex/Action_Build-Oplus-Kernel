@@ -168,7 +168,7 @@ jobs:
         run: |
           cd "$WORKSPACE"
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
-          git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
+          git clone https://gitlab.com/shirkneko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
 
           # Copy patches
           cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch "$COMMON/"
@@ -185,9 +185,9 @@ jobs:
           patch -p1 < "50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch" || { echo "应用 susfs 补丁失败"; exit 1; }
           echo "susfs 补丁应用完成"
 
-          echo "正在打隐藏应用补丁..."
-          patch -p1 -F 3 < "69_hide_stuff.patch" || { echo "应用隐藏应用补丁失败"; exit 1; }
-          echo "隐藏应用补丁应用完成"
+          #echo "正在打隐藏应用补丁..."
+          #patch -p1 -F 3 < "69_hide_stuff.patch" || { echo "应用隐藏应用补丁失败"; exit 1; }
+          #echo "隐藏应用补丁应用完成"
 
       - name: Apply New Hooks patches # 应用新的钩子补丁
         if: ${{ startsWith(inputs.KSU_CONFIG, 'SukiSU') && inputs.VFS_PATCH == 'enable' }}
