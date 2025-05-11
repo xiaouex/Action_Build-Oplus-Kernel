@@ -287,14 +287,26 @@ jobs:
           # Copy kernel
           IMAGE_PATH=$(find "$PLATFORM/out" -name "Image")
           if [ -n "$IMAGE_PATH" ]; then
-            cp "$IMAGE_PATH" "$WORKSPACE/image_output/Image"
             cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3-KernelSU-Next/Image"
+            cp "$IMAGE_PATH" "$WORKSPACE/image_output/Image"
             echo "Image 文件已找到:$IMAGE_PATH"
           else
             echo "Image 文件未找到"
             exit 1
           fi
 
+          # Copy dtbo.img
+          readarray -d '' DTBO_FILES < <(find device/ -type f -name '*dtbo.img' -print0)
+
+          if [ ${#DTBO_FILES[@]} -gt 0 ]; then
+              cp "${DTBO_FILES[@]}" "$WORKSPACE/image_output/"
+              echo "已复制以下文件到 image_output/："
+              printf "%s\n" "${DTBO_FILES[@]}"
+          else
+              echo "未找到任何 dtbo.img 文件"
+          fi
+
+          # Copy boot.img
           BOOTIMG_PATH=$(find "$PLATFORM/out" -name "boot.img")
           if [ -n "$BOOTIMG_PATH" ]; then
             cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
@@ -355,7 +367,7 @@ jobs:
             - 构建时间: `${{ steps.formatted_date.outputs.formatted }}`
           files: |
             ${{ env.WORKSPACE }}/AnyKernel3-*.zip
-            ${{ env.WORKSPACE }}/image_output/boot.img
+            ${{ env.WORKSPACE }}/image_output/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
