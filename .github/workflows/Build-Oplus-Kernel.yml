@@ -296,14 +296,16 @@ jobs:
           fi
 
           # Copy dtbo.img
-          readarray -d '' DTBO_FILES < <(find device/ -type f -name '*dtbo.img' -print0)
+          if [[ "${{ env.KERNEL_VERSION }}" == "6.6" && "${{ inputs.FILE }}" != "oneplus_13t_v" ]]; then
+            readarray -d '' DTBO_FILES < <(find device/ -type f -name '*dtbo.img' -print0)
 
-          if [ ${#DTBO_FILES[@]} -gt 0 ]; then
-              cp "${DTBO_FILES[@]}" "$WORKSPACE/image_output/"
-              echo "已复制以下文件到 image_output/："
-              printf "%s\n" "${DTBO_FILES[@]}"
-          else
-              echo "未找到任何 dtbo.img 文件"
+            if [ ${#DTBO_FILES[@]} -gt 0 ]; then
+                cp "${DTBO_FILES[@]}" "$WORKSPACE/image_output/"
+                echo "已复制以下文件到 image_output/："
+                printf "%s\n" "${DTBO_FILES[@]}"
+            else
+                echo "未找到任何 dtbo.img 文件"
+            fi
           fi
 
           # Copy boot.img
