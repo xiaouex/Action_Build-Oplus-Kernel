@@ -363,10 +363,10 @@ jobs:
       - name: Create Release version and upload # 创建正式版本并上传
         uses: softprops/action-gh-release@v2
         with:
-          name: "内核发布: ${{ env.BRAND }}-${{ env.MODEL }}-${{ steps.formatted_date.outputs.formatted }}"
-          tag_name: "${{ inputs.FILE }}-${{ steps.formatted_date.outputs.formatted }}"
+          name: "Kenrel Release: ${{ env.BRAND }}-${{ env.MODEL }}-${{ steps.formatted_date.outputs.formatted }}"
+          tag_name: "${{ steps.formatted_date.outputs.formatted }}"
           body: |
-            OnePlus Kernel Build
+            OnePlus Kernel Release
             - Device 机型: `${{ env.BRAND }} ${{ env.MODEL }}`
             - SoC 型号: `${{ inputs.SoC }}`
             - Chipset 代号: `${{ inputs.Chipset }}`
@@ -374,8 +374,9 @@ jobs:
             - Branch 版本: `${{ env.KSUVER }}`
             - SUSFS 补丁: `${{ inputs.SUSFS }}`
             - VFS 补丁: `${{ inputs.VFS }}`
+            - KPM 补丁: `${{ inputs.KPM }}`
             - Kernel 版本: `${{ inputs.VERSION }}`
-            - 构建时间: `${{ steps.formatted_date.outputs.formatted }}`
+            - BuildTime 构建时间: `${{ steps.formatted_date.outputs.formatted }}`
           files: |
             ${{ env.WORKSPACE }}/AnyKernel3-*.zip
             ${{ env.WORKSPACE }}/image_output/*
