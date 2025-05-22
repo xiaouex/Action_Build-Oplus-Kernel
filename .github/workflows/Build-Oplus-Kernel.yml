@@ -61,6 +61,15 @@ on:
           - disable
         default: enable
 
+      KPM:
+        description: "启用 KPM 补丁 // Enable kernel patched modules"
+        required: true
+        type: choice
+        options:
+          - enable
+          - disable
+        default: enable
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -317,8 +326,8 @@ jobs:
             echo "boot.img 文件未找到，已跳过复制"
           fi
 
-      - name: Apply patch_linux and replace Image # 应用 patch_linux 并替换 Image
-        if: ${{ inputs.VFS == 'enable' }}
+      - name: Apply patch_linux and replace Image # 应用 KPM patch_linux 并替换 Image
+        if: ${{ inputs.KPM == 'enable' }}
         run: |
           cd "$WORKSPACE/image_output"
           curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
