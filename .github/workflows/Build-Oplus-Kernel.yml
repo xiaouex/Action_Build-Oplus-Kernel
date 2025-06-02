@@ -239,6 +239,13 @@ jobs:
           echo "CONFIG_TMPFS_XATTR=y" >> "$DEFCONFIG"
           echo "CONFIG_TMPFS_POSIX_ACL=y" >> "$DEFCONFIG"
 
+          # Set BBR as the default TCP algorithm
+          echo "Setting BBR as the default TCP algorithm configuration..."
+          echo "CONFIG_TCP_CONG_BBR=y" >> "$DEFCONFIG"
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$DEFCONFIG"
+          echo "CONFIG_DEFAULT_BBR=y" >> "$DEFCONFIG"
+          echo "CONFIG_DEFAULT_CUBIC=n" >> "$DEFCONFIG"
+
           # Add Netfilter related configuration
           echo "Adding Netfilter related kernel configuration..."
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> "$DEFCONFIG"
