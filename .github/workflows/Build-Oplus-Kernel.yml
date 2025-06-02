@@ -64,7 +64,7 @@ on:
         options:
           - enable
           - disable
-        default: enable
+        default: disable
 
       KLEAF:
         description: "使用 Bazel 构建内核镜像 // Building Android Kernels with Bazel"
