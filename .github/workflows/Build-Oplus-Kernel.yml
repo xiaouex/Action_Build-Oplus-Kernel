@@ -24,11 +24,6 @@ on:
         required: true
         default: 'sun'
 
-      VERSION:
-        description: "版本格式 // Format: android15-6.6 [Android版本-内核版本]"
-        required: true
-        default: 'android15-6.6'
-
       KSU_CONFIG:
         description: "选择 KernelSU 配置 // Select KernelSU configuration"
         required: true
@@ -76,13 +71,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Parse VERSION input # 解析 VERSION 输入
+      - name: Parse SOC → Set ANDROID_VERSION, KERNEL_VERSION, CHIPSET # 解析 VERSION, KERNEL_VERSION, CHIPSET 输入
         run: |
-          VERSION=$(echo "${{ github.event.inputs.VERSION }}")
-          ANDROID_VERSION=$(echo "$VERSION" | cut -d'-' -f1)
-          KERNEL_VERSION=$(echo "$VERSION" | cut -d'-' -f2)
+          SOC="${{ github.event.inputs.SOC }}"
+          echo "SOC=$SOC" >> $GITHUB_ENV
+
+          # 根据 SOC 映射 ANDROID_VERSION,KERNEL_VERSION,CHIPSET
+          case "$SOC" in
+            sm8750)
+              ANDROID_VERSION="android15"
+              KERNEL_VERSION="6.6"
+              CHIPSET="sun"
+              ;;
+            sm8650|sm7675)
+              ANDROID_VERSION="android14"
+              KERNEL_VERSION="6.1"
+              CHIPSET="pineapple"
+              ;;
+            *)
+              echo "Unknown SOC: $SOC"
+              exit 1
+              ;;
+          esac
+
           echo "ANDROID_VERSION=$ANDROID_VERSION" >> $GITHUB_ENV
           echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+          echo "CHIPSET=$CHIPSET" >> $GITHUB_ENV
 
       - name: Parse Device Name # 解析机型名称
         run: |
@@ -293,7 +307,7 @@ jobs:
           cd "$WORKSPACE"
 
           BUILD_TYPE="gki"
-          if [ "${{ inputs.CHIPSET }}" == "sun" ]; then
+          if [ "$CHIPSET" == "sun" ]; then
             BUILD_TYPE="perf"
           fi
 
@@ -307,7 +321,7 @@ jobs:
               //common:kernel_aarch64_dist \
               -- --dist_dir=out/dist || { echo "内核构建失败"; exit 1; }
           else
-            LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.CHIPSET }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
+            LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh "$CHIPSET" "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
           fi
 
       - name: Make AnyKernel3 # 制作 AnyKernel3
@@ -399,13 +413,13 @@ jobs:
             OnePlus Kernel Release
             - Device 机型: `${{ env.BRAND }} ${{ env.MODEL }}`
             - SoC 型号: `${{ inputs.SOC }}`
-            - Chipset 代号: `${{ inputs.CHIPSET }}`
+            - Chipset 代号: `${{ env.CHIPSET }}`
             - KernelSU 类型: `${{ env.KSU_TYPE }}`
             - Branch 版本: `${{ env.KSUVER }}`
             - SUSFS 补丁: `${{ inputs.SUSFS }}`
             - VFS 补丁: `${{ inputs.VFS }}`
             - KPM 补丁: `${{ inputs.KPM }}`
-            - Kernel 版本: `${{ inputs.VERSION }}`
+            - Kernel 版本: `${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}`
             - BuildTime 构建时间: `${{ steps.formatted_date.outputs.formatted }}`
           files: |
             ${{ env.WORKSPACE }}/AnyKernel3-*.zip
