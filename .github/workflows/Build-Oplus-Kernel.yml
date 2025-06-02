@@ -387,14 +387,15 @@ jobs:
             IMAGE_PATH=$(find "$PLATFORM/out/dist" -name "Image")
           else
             IMAGE_PATH=$(find "$PLATFORM/out" -name "Image")
-            if [ -n "$IMAGE_PATH" ]; then
-              cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3-KernelSU-Next/Image"
-              cp "$IMAGE_PATH" "$WORKSPACE/image_output/Image"
-              echo "Image 文件已找到:$IMAGE_PATH"
-            else
-              echo "Image 文件未找到"
-              exit 1
-            fi
+          fi
+
+          if [ -n "$IMAGE_PATH" ]; then
+            cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3-KernelSU-Next/Image"
+            cp "$IMAGE_PATH" "$WORKSPACE/image_output/Image"
+            echo "Image 文件已找到:$IMAGE_PATH"
+          else
+            echo "Image 文件未找到"
+            exit 1
           fi
 
           # Copy boot.img
@@ -402,12 +403,13 @@ jobs:
             BOOTIMG_PATH=$(find "$PLATFORM/out/dist" -name "boot.img")
           else
             BOOTIMG_PATH=$(find "$PLATFORM/out" -name "boot.img")
-            if [ -n "$BOOTIMG_PATH" ]; then
-              cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
-              echo "boot.img 文件已找到:$BOOTIMG_PATH"
-            else
-              echo "boot.img 文件未找到，已跳过复制"
-            fi
+          fi
+
+          if [ -n "$BOOTIMG_PATH" ]; then
+            cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
+            echo "boot.img 文件已找到:$BOOTIMG_PATH"
+          else
+            echo "boot.img 文件未找到，已跳过复制"
           fi
 
       - name: Copy DTBO # 复制 dtbo
