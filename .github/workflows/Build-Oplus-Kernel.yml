@@ -19,11 +19,6 @@ on:
           - oneplus_sm8750_v
         default: oneplus_13_v
 
-      CHIPSET:
-        description: "开发板代号 // Chipset codename"
-        required: true
-        default: 'sun'
-
       KSU_CONFIG:
         description: "选择 KernelSU 配置 // Select KernelSU configuration"
         required: true
