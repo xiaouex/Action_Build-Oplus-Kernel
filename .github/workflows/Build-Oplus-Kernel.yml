@@ -3,7 +3,7 @@ name: Build Oplus Kernel # 构建一加内核
 on:
   workflow_dispatch:
     inputs:
-      SoC:
+      SOC:
         description: "芯片型号 // SoC to build"
         required: true
         default: 'sm8750'
@@ -19,7 +19,7 @@ on:
           - oneplus_sm8750_v
         default: oneplus_13_v
 
-      Chipset:
+      CHIPSET:
         description: "开发板代号 // Chipset codename"
         required: true
         default: 'sun'
@@ -146,7 +146,7 @@ jobs:
       - name: Initialize repo and sync # 初始化 repo 和同步
         run: |
           mkdir "$WORKSPACE" && cd "$WORKSPACE"
-          repo init -u https://github.com/schqiushui/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.SoC }} -m ${{ inputs.FILE }}.xml --depth=1 || { echo "repo init 失败"; exit 1; }
+          repo init -u https://github.com/schqiushui/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.SOC }} -m ${{ inputs.FILE }}.xml --depth=1 || { echo "repo init 失败"; exit 1; }
           repo sync -c -j$(nproc --all) --no-tags || { echo "repo sync 失败"; exit 1; }
           git clone https://gitlab.com/kei-space/clang/r522817.git $PLATFORM/prebuilts/clang/host/linux-x86/clang-r522817
 
@@ -269,12 +269,12 @@ jobs:
           cd "$WORKSPACE"
 
           BUILD_TYPE="gki"
-          if [ "${{ inputs.Chipset }}" == "sun" ]; then
+          if [ "${{ inputs.CHIPSET }}" == "sun" ]; then
             BUILD_TYPE="perf"
           fi
 
           echo "开始构建内核，构建类型：$BUILD_TYPE"
-          LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.Chipset }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
+          LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.CHIPSET }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
 
       - name: Make AnyKernel3 # 制作 AnyKernel3
         run: |
@@ -359,8 +359,8 @@ jobs:
           body: |
             OnePlus Kernel Release
             - Device 机型: `${{ env.BRAND }} ${{ env.MODEL }}`
-            - SoC 型号: `${{ inputs.SoC }}`
-            - Chipset 代号: `${{ inputs.Chipset }}`
+            - SoC 型号: `${{ inputs.SOC }}`
+            - Chipset 代号: `${{ inputs.CHIPSET }}`
             - KernelSU 类型: `${{ env.KSU_TYPE }}`
             - Branch 版本: `${{ env.KSUVER }}`
             - SUSFS 补丁: `${{ inputs.SUSFS }}`
