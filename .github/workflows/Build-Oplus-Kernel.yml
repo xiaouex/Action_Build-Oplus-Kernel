@@ -300,7 +300,7 @@ jobs:
           echo "开始构建内核，构建类型：$BUILD_TYPE"
 
           if [ "${{ inputs.KLEAF }}" = "true" ]; then
-            cd "$KERNEL_PLATFORM"
+            cd "$PLATFORM"
 
             SOURCE_DATE_EPOCH=$(date +%s) \
             tools/bazel run --config=fast --config=stamp \
