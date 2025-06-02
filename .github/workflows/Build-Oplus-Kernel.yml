@@ -465,7 +465,7 @@ jobs:
       - name: Create Release version and upload # 创建正式版本并上传
         uses: softprops/action-gh-release@v2
         with:
-          name: "Kenrel Release: ${{ env.BRAND }}-${{ env.MODEL }}-${{ steps.formatted_date.outputs.formatted }}"
+          name: "Kernel Release: ${{ env.BRAND }}-${{ env.MODEL }}-${{ steps.formatted_date.outputs.formatted }}"
           tag_name: "${{ steps.formatted_date.outputs.formatted }}"
           body: |
             OnePlus Kernel Release
