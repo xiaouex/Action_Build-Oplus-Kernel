@@ -74,7 +74,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       
       - name: 释放磁盘空间
