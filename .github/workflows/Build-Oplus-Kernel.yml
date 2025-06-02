@@ -81,8 +81,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
+      
+      - name: 释放磁盘空间
+        uses: jlumbroso/free-disk-space@main
+        with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+          tool-cache: true
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+          
       - name: Parse VERSION input # 解析 VERSION 输入
         run: |
           VERSION=$(echo "${{ github.event.inputs.VERSION }}")
@@ -298,8 +313,8 @@ jobs:
           #echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "$DEFCONFIG"
           #echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "$DEFCONFIG"
           
-          echo "CONFIG_CRYPTO_LZ4HC=y" >> "$DEFCONFIG"
-          echo "CONFIG_CRYPTO_LZ4K=y" >> "$DEFCONFIG"
+          #echo "CONFIG_CRYPTO_LZ4HC=y" >> "$DEFCONFIG"
+          #echo "CONFIG_CRYPTO_LZ4K=y" >> "$DEFCONFIG"
           echo "CONFIG_CRYPTO_LZ4KD=y" >> "$DEFCONFIG"
           echo "CONFIG_CRYPTO_842=y" >> "$DEFCONFIG"
           echo "更新KernelSU 内核配置完成"
