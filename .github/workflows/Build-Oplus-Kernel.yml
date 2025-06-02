@@ -66,6 +66,12 @@ on:
           - disable
         default: enable
 
+      KLEAF:
+        description: "使用 Bazel 构建内核镜像 // Building Android Kernels with Bazel"
+        required: true
+        type: boolean
+        default: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -292,7 +298,17 @@ jobs:
           fi
 
           echo "开始构建内核，构建类型：$BUILD_TYPE"
-          LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.CHIPSET }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
+
+          if [ "${{ inputs.KLEAF }}" = "true" ]; then
+            cd "$KERNEL_PLATFORM"
+
+            SOURCE_DATE_EPOCH=$(date +%s) \
+            tools/bazel run --config=fast --config=stamp \
+              //common:kernel_aarch64_dist \
+              -- --dist_dir=out/dist || { echo "内核构建失败"; exit 1; }
+          else
+            LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.CHIPSET }} "$BUILD_TYPE" --jobs=$(nproc --all) || { echo "内核构建失败"; exit 1; }
+          fi
 
       - name: Make AnyKernel3 # 制作 AnyKernel3
         run: |
@@ -313,6 +329,20 @@ jobs:
             exit 1
           fi
 
+          # Copy boot.img
+          BOOTIMG_PATH=$(find "$PLATFORM/out" -name "boot.img")
+          if [ -n "$BOOTIMG_PATH" ]; then
+            cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
+            echo "boot.img 文件已找到:$BOOTIMG_PATH"
+          else
+            echo "boot.img 文件未找到，已跳过复制"
+          fi
+
+      - name: Copy DTBO # 复制 dtbo
+        if: ${{ inputs.KLEAF == 'false' }}
+        run: |
+          cd "$WORKSPACE"
+
           # Copy dtbo.img
           if [[ "${{ env.KERNEL_VERSION }}" == "6.6" && "${{ inputs.FILE }}" != "oneplus_13t_v" ]]; then
             readarray -d '' DTBO_FILES < <(find device/ -type f -name '*dtbo.img' -print0)
@@ -324,15 +354,6 @@ jobs:
             else
                 echo "未找到任何 dtbo.img 文件"
             fi
-          fi
-
-          # Copy boot.img
-          BOOTIMG_PATH=$(find "$PLATFORM/out" -name "boot.img")
-          if [ -n "$BOOTIMG_PATH" ]; then
-            cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
-            echo "boot.img 文件已找到:$BOOTIMG_PATH"
-          else
-            echo "boot.img 文件未找到，已跳过复制"
           fi
 
       - name: Apply patch_linux and replace Image # 应用 KPM patch_linux 并替换 Image
