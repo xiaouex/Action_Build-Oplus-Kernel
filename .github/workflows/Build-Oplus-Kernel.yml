@@ -70,7 +70,7 @@ on:
           - disable
         default: enable
         
-        LZ4KD:
+      LZ4KD:
         description: "启用 lz4kd 补丁 // Enable kernel patched modules"
         required: true
         type: choice
