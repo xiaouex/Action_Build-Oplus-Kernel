@@ -296,7 +296,6 @@ jobs:
           echo "CONFIG_CRYPTO_LZ4K=y" >> $DEFCONFIG"
           echo "CONFIG_CRYPTO_LZ4KD=y" >> $DEFCONFIG"
           echo "CONFIG_CRYPTO_842=y" >> $DEFCONFIG"
-          echo "CONFIG_LOCALVERSION_AUTO=n" >> $DEFCONFIG"
           echo "更新KernelSU 内核配置完成"
 
           # 
