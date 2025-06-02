@@ -69,6 +69,15 @@ on:
           - enable
           - disable
         default: enable
+        
+        LZ4KD:
+        description: "启用 lz4kd 补丁 // Enable kernel patched modules"
+        required: true
+        type: choice
+        options:
+          - enable
+          - disable
+        default: enable 
 
 jobs:
   build:
@@ -220,7 +229,23 @@ jobs:
           echo "正在打 vfs 补丁..."
           patch -p1 -F 3 < "syscall_hooks.patch" || { echo "应用 vfs 补丁失败"; exit 1; }
           echo "vfs 补丁应用完成"
-
+          
+      - name: Apply lz4kd Patches
+        if: ${{inputs.LZ4KD }}
+        run: |
+          cd "$WORKSPACE"
+          
+          if [ ! -d SukiSU_patch ]; then
+            git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git
+          else
+            echo "SukiSU_patch 目录已存在，跳过克隆。"
+          fi
+          
+          cp ./SukiSU_patch/other/zram/zram_patch/6.6/lz4kd.patch "$COMMON/"
+          cd "$COMMON"
+          patch -p1 -F 3 < lz4kd.patch || { echo "应用 lz4kd 补丁失败"; exit 1; }
+          echo "lz4kd 补丁应用完成"
+            
       - name: Configure kernel # 配置内核
         run: |
           cd "$WORKSPACE"
