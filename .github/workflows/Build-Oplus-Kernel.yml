@@ -258,7 +258,7 @@ jobs:
           echo "vfs 补丁应用完成"
 
 
-       - name: Apply lz4kd Patches
+      - name: Apply lz4kd Patches
         if: ${{inputs.LZ4KD }}
         run: |
         
