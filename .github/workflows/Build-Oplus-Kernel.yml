@@ -255,11 +255,11 @@ jobs:
           echo "CONFIG_TMPFS_POSIX_ACL=y" >> "$DEFCONFIG"
 
           # Set BBR as the default TCP algorithm
-          echo "Setting BBR as the default TCP algorithm configuration..."
-          echo "CONFIG_TCP_CONG_BBR=y" >> "$DEFCONFIG"
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$DEFCONFIG"
-          echo "CONFIG_DEFAULT_BBR=y" >> "$DEFCONFIG"
-          echo "CONFIG_DEFAULT_CUBIC=n" >> "$DEFCONFIG"
+          if [[ "${{ env.KERNEL_VERSION }}" == "6.6" && ! "${{ inputs.FILE }}" =~ ^(oneplus_13t_v|oneplus_sm8750_v)$ ]]; then
+            echo "Setting BBR as the default TCP algorithm configuration..."
+            echo "CONFIG_DEFAULT_BBR=y" >> "$DEFCONFIG"
+            echo "CONFIG_DEFAULT_CUBIC=n" >> "$DEFCONFIG"
+          fi
 
           # Add Netfilter related configuration
           echo "Adding Netfilter related kernel configuration..."
