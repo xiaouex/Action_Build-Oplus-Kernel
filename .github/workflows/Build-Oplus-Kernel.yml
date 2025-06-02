@@ -333,23 +333,31 @@ jobs:
           git clone https://github.com/schqiushui/AnyKernel3-KernelSU-Next.git -b gki-2.0 --depth=1 && rm -rf ./AnyKernel3-KernelSU-Next/.git
 
           # Copy kernel
-          IMAGE_PATH=$(find "$PLATFORM/out" -name "Image")
-          if [ -n "$IMAGE_PATH" ]; then
-            cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3-KernelSU-Next/Image"
-            cp "$IMAGE_PATH" "$WORKSPACE/image_output/Image"
-            echo "Image 文件已找到:$IMAGE_PATH"
+          if [ "${{ inputs.KLEAF }}" = "true" ]; then
+            IMAGE_PATH=$(find "$PLATFORM/out/dist" -name "Image")
           else
-            echo "Image 文件未找到"
-            exit 1
+            IMAGE_PATH=$(find "$PLATFORM/out" -name "Image")
+            if [ -n "$IMAGE_PATH" ]; then
+              cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3-KernelSU-Next/Image"
+              cp "$IMAGE_PATH" "$WORKSPACE/image_output/Image"
+              echo "Image 文件已找到:$IMAGE_PATH"
+            else
+              echo "Image 文件未找到"
+              exit 1
+            fi
           fi
 
           # Copy boot.img
-          BOOTIMG_PATH=$(find "$PLATFORM/out" -name "boot.img")
-          if [ -n "$BOOTIMG_PATH" ]; then
-            cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
-            echo "boot.img 文件已找到:$BOOTIMG_PATH"
+          if [ "${{ inputs.KLEAF }}" = "true" ]; then
+            BOOTIMG_PATH=$(find "$PLATFORM/out/dist" -name "boot.img")
           else
-            echo "boot.img 文件未找到，已跳过复制"
+            BOOTIMG_PATH=$(find "$PLATFORM/out" -name "boot.img")
+            if [ -n "$BOOTIMG_PATH" ]; then
+              cp "$BOOTIMG_PATH" "$WORKSPACE/image_output/boot.img"
+              echo "boot.img 文件已找到:$BOOTIMG_PATH"
+            else
+              echo "boot.img 文件未找到，已跳过复制"
+            fi
           fi
 
       - name: Copy DTBO # 复制 dtbo
@@ -358,7 +366,7 @@ jobs:
           cd "$WORKSPACE"
 
           # Copy dtbo.img
-          if [[ "${{ env.KERNEL_VERSION }}" == "6.6" && "${{ inputs.FILE }}" != "oneplus_13t_v" ]]; then
+          if [[ "${{ env.KERNEL_VERSION }}" == "6.6" && ! "${{ inputs.FILE }}" =~ ^(oneplus_13t_v|oneplus_sm8750_v)$ ]]; then
             readarray -d '' DTBO_FILES < <(find device/ -type f -name '*dtbo.img' -print0)
 
             if [ ${#DTBO_FILES[@]} -gt 0 ]; then
