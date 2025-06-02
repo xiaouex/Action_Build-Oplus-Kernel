@@ -233,6 +233,7 @@ jobs:
       - name: Apply lz4kd Patches
         if: ${{inputs.LZ4KD }}
         run: |
+        
           cd "$WORKSPACE"
           
           if [ ! -d SukiSU_patch ]; then
@@ -240,6 +241,11 @@ jobs:
           else
             echo "SukiSU_patch 目录已存在，跳过克隆。"
           fi
+          
+          cp -r ./SukiSU_patch/other/zram/lz4k/include/linux/* $COMMON/include/linux
+          cp -r ./SukiSU_patch/other/zram/lz4k/lib/* $COMMON/lib
+          cp -r ./SukiSU_patch/other/zram/lz4k/crypto/* $COMMONn/crypto
+          cp -r ./SukiSU_patch/other/zram/lz4k_oplus $COMMON/lib/
           
           cp ./SukiSU_patch/other/zram/zram_patch/6.6/lz4kd.patch "$COMMON/"
           cd "$COMMON"
