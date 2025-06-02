@@ -29,11 +29,6 @@ on:
         required: true
         default: 'android15-6.6'
 
-      KERNEL_NAME:
-        description: "内核名称后缀 // Kernel name suffix"
-        required: true
-        default: '-android15-8-g013ec21bba94-abogki383916444'
-
       KSU_CONFIG:
         description: "选择 KernelSU 配置 // Select KernelSU configuration"
         required: true
@@ -238,11 +233,6 @@ jobs:
           sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" "$PLATFORM/build/kernel/kleaf/impl/stamp.bzl"
           sed -i '/KMI_GENERATION/s/-$oki_infix//g' "$PLATFORM/build/kernel/kleaf/impl/stamp.bzl"
           sed -i 's/^\(CONFIG_LOCALVERSION="[^"]*\)"/\1-Lotus"/' "$DEFCONFIG"
-
-          # Replace kernel name strings
-          #echo "正在设置内核名称..."
-          #sed -i '$s|echo "\$res"|echo "\${{ inputs.KERNEL_NAME }}"|' "$COMMON/scripts/setlocalversion"
-          #echo "内核名称设置完成"
 
           # Set KSU config to gki_defconfig
           echo "正在更新KernelSU 内核配置..."
