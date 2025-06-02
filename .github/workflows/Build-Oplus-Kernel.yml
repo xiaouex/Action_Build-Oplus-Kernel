@@ -61,11 +61,36 @@ on:
         required: true
         type: boolean
         default: false
+        
+      LZ4KD:
+        description: "启用 lz4kd 补丁 // Enable kernel patched modules"
+        required: true
+        type: choice
+        options:
+          - enable
+          - disable
+        default: enable 
+        
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      
+      - name: 释放磁盘空间
+        uses: jlumbroso/free-disk-space@main
+        with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+          tool-cache: true
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+      
       - name: Parse SOC → Set ANDROID_VERSION, KERNEL_VERSION, CHIPSET # 解析 VERSION, KERNEL_VERSION, CHIPSET 输入
         run: |
           SOC="${{ github.event.inputs.SOC }}"
@@ -232,6 +257,29 @@ jobs:
           patch -p1 -F 3 < "syscall_hooks.patch" || { echo "应用 vfs 补丁失败"; exit 1; }
           echo "vfs 补丁应用完成"
 
+
+       - name: Apply lz4kd Patches
+        if: ${{inputs.LZ4KD }}
+        run: |
+        
+          cd "$WORKSPACE"
+          
+          if [ ! -d SukiSU_patch ]; then
+            git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git
+          else
+            echo "SukiSU_patch 目录已存在，跳过克隆。"
+          fi
+          
+          cp -r ./SukiSU_patch/other/zram/lz4k/include/linux/* $COMMON/include/linux
+          cp -r ./SukiSU_patch/other/zram/lz4k/lib/* $COMMON/lib
+          cp -r ./SukiSU_patch/other/zram/lz4k/crypto/* $COMMON/crypto
+          cp -r ./SukiSU_patch/other/zram/lz4k_oplus $COMMON/lib/
+          
+          cp ./SukiSU_patch/other/zram/zram_patch/6.6/lz4kd.patch "$COMMON/"
+          cd "$COMMON"
+          patch -p1 -F 3 < lz4kd.patch || { echo "应用 lz4kd 补丁失败"; exit 1; }
+          echo "lz4kd 补丁应用完成"
+          
       - name: Configure kernel # 配置内核
         run: |
           cd "$WORKSPACE"
@@ -290,8 +338,15 @@ jobs:
           #echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "$DEFCONFIG"
           #echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "$DEFCONFIG"
           #echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "$DEFCONFIG"
+          
+          #echo "CONFIG_CRYPTO_LZ4HC=y" >> "$DEFCONFIG"
+          #echo "CONFIG_CRYPTO_LZ4K=y" >> "$DEFCONFIG"
+          echo "CONFIG_CRYPTO_LZ4KD=y" >> "$DEFCONFIG"
+          echo "CONFIG_CRYPTO_842=y" >> "$DEFCONFIG"
+          
           echo "更新KernelSU 内核配置完成"
 
+          
           # 
           cd "$COMMON"
           git status
@@ -422,6 +477,7 @@ jobs:
             - SUSFS 补丁: `${{ inputs.SUSFS }}`
             - VFS 补丁: `${{ inputs.VFS }}`
             - KPM 补丁: `${{ inputs.KPM }}`
+            - LZ4KD 补丁: `${{ inputs.LZ4KD }}`
             - Kernel 版本: `${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}`
             - BuildTime 构建时间: `${{ steps.formatted_date.outputs.formatted }}`
           files: |
