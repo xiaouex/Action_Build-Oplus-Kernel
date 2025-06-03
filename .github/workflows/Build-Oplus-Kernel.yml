@@ -149,12 +149,14 @@ jobs:
           WORKSPACE_DIR="$GITHUB_WORKSPACE/kernel_workspace"
           PLATFORM_DIR="$WORKSPACE_DIR/kernel_platform"
           COMMON_DIR="$PLATFORM_DIR/common"
+          CLANG_DIR_19_1="$PLATFORM_DIR/prebuilts/clang/host/linux-x86/clang-r536225"
           DEFCONFIG="$COMMON_DIR/arch/arm64/configs/gki_defconfig"
 
           # Set working DIR as an environment variable for future steps
           echo "WORKSPACE=$WORKSPACE_DIR" >> $GITHUB_ENV
           echo "PLATFORM=$PLATFORM_DIR" >> $GITHUB_ENV
           echo "COMMON=$COMMON_DIR" >> $GITHUB_ENV
+          echo "CLANG=$CLANG_DIR_19_1" >> $GITHUB_ENV
           echo "DEFCONFIG=$DEFCONFIG" >> $GITHUB_ENV
 
       - name: Maximize build space # 最大化构建空间
@@ -188,8 +190,13 @@ jobs:
           mkdir "$WORKSPACE" && cd "$WORKSPACE"
           repo init -u https://github.com/schqiushui/kernel_manifest.git -b refs/heads/oneplus/${{ inputs.SOC }} -m ${{ inputs.FILE }}.xml --depth=1 || { echo "repo init 失败"; exit 1; }
           repo sync -c -j$(nproc --all) --no-tags || { echo "repo sync 失败"; exit 1; }
-          git clone -b 18.0.1 https://gitlab.com/GhostMaster69-dev/android-clang.git $PLATFORM/prebuilts/clang/host/linux-x86/clang-r522817
 
+      
+      - name: clone clang19 # 克隆 clang19
+        run: |
+          cd "$WORKSPACE"
+          git clone -b 19.0.1 https://gitlab.com/GhostMaster69-dev/android-clang.git "$CLANG"
+      
       - name: Get KernelSU version # 获取 KernelSU 版本
         if: ${{ startsWith(inputs.KSU_CONFIG, 'SukiSU') }}
         run: |
@@ -426,7 +433,14 @@ jobs:
           echo "CONFIG_CRYPTO_842=y" >> "$DEFCONFIG"
           
           echo "更新KernelSU 内核配置完成"
-
+          
+          # 修改内核默认编译工具链 Clang 版本
+          if [[ "${{ env.KERNEL_VERSION }}" == "6.6" && ! "${{ inputs.FILE }}" =~ ^(oneplus_13t_v|oneplus_sm8750_v)$ ]]; then
+            if [ "${{ inputs.KLEAF }}" = "true" ]; then
+              sed -i '/CLANG_VERSION/s/r510928/r536225/g' "$COMMON/build.config.constants"
+            fi
+          fi
+          
           
           # 
           cd "$COMMON"
