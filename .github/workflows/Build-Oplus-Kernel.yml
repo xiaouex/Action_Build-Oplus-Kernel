@@ -26,7 +26,7 @@ on:
         options:
           - Kernel_without_KSU
           - SukiSU_dev
-          - SukiSU_stable
+          - SukiSU_main
         default: SukiSU_dev
 
       SUSFS:
